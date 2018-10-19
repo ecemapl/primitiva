@@ -1,0 +1,69 @@
+---
+title: "Loteria Primitiva"
+author: "M.A. Pallares"
+date: "14/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Propósito
+
+Se me ha ocurrido hacer un análisis estadístico de los resultados de la Loteria Primitiva.
+
+Los datos de entrada vienen de lotoideas.com
+
+```{r primitiva}
+library(readr)
+dataset <- read_csv("~/Dropbox/DataMining/LoteriaPrimitiva/Historico.csv", 
+    col_types = cols(COMP = col_integer(), 
+        FECHA = col_date(format = "%d/%m/%Y"), 
+        JOKER = col_skip(), R = col_integer(), 
+        X1 = col_integer(), X2 = col_integer(), 
+        X3 = col_integer(), X4 = col_integer(), 
+        X5 = col_integer(), X6 = col_integer()))
+summary(dataset)
+
+dataset = as.matrix(dataset)
+
+summary(dataset[,2])
+
+```
+
+## Análisis inocente
+
+Un primer análisis inocente es ver si hay números que hayan aparecido más veces que otros. Uno podría pensar que no, y que todos los números saldrán por igual, vamos a ver ...
+
+
+```{r frecuencias}
+dataset2 <- dataset[,-1]
+dataset2 <- dataset2[,-7]
+dataset2 <- dataset2[,-7]
+dataset_frequency <- sort(table(dataset2),decreasing=TRUE)
+
+show(dataset_frequency)
+
+```
+
+## Preparando los datos para analizarlos más
+
+Mi amigo David Manzano me ha dicho que mi error es no considerar probabilidades condicionales. Que pruebe a calcular cuantas veces se repite una pareja de números o tres números o n números.
+
+``` {r distancias}
+
+library(plyr)
+
+dataset2.dist = as.matrix(dist(dataset2, method = "euclidean", diag = FALSE, upper = FALSE))
+
+diag(dataset2.dist) <- 1000
+sum(dataset2.dist == 0)
+
+which(dataset2.dist == 0, arr.ind=T)
+dataset2[which(dataset2.dist == 0, arr.ind=T) [1,1],]
+dataset2[which(dataset2.dist == 0, arr.ind=T) [1,2],]
+
+```
+
+Se da la circunstancia que de las dos veces que ha salido la misma combinación, ninguna ha habido ningún número coincidente con los más frecuentes.
